@@ -1,0 +1,648 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Agency {
+  id                    String                 @id @default(uuid())
+  name                  String
+  timezone              String                 @default("Europe/London")
+  createdAt             DateTime               @default(now())
+  messagingMode         MessagingMode          @default(APPROVAL_ONLY)
+  candidates            Candidate[]
+  contacts              Contact[]
+  conversations         Conversation[]
+  earningsSettings      EarningsSettings[]
+  jobMatches            JobCandidateMatch[]
+  jobs                  Job[]
+  messages              Message[]
+  monthlyEarnings       MonthlyEarnings[]
+  placements            Placement[]
+  tasks                 Task[]
+  timelineEvents        TimelineEvent[]
+  users                 User[]
+  jobPipelineItems      JobPipelineItem[]
+  reviewSamples         MessageReviewSample[]
+  playbook              AgencyPlaybook?
+  opportunityActionLogs OpportunityActionLog[]
+
+  @@index([id])
+  @@map("agencies")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  agencyId  String
+  name      String
+  phone     String
+  role      UserRole
+  createdAt DateTime @default(now())
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, phone])
+  @@index([agencyId])
+  @@index([phone])
+  @@map("users")
+}
+
+model Contact {
+  id             String          @id @default(uuid())
+  agencyId       String
+  phone          String
+  name           String?
+  type           ContactType
+  optedOut       Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  agency         Agency          @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  conversations  Conversation[]
+  messages       Message[]
+  timelineEvents TimelineEvent[]
+
+  @@unique([agencyId, phone])
+  @@index([agencyId])
+  @@index([phone])
+  @@index([type])
+  @@map("contacts")
+}
+
+model Candidate {
+  id                 String              @id @default(uuid())
+  agencyId           String
+  phone              String
+  name               String?
+  location           String?
+  desiredRole        String?
+  skills             String[]            @default([])
+  yearsExperience    Int?
+  salaryMin          Int?
+  salaryMax          Int?
+  currency           String?
+  availabilityNotes  String?
+  lastSeenAt         DateTime            @default(now())
+  lastConversationId String?
+  source             CandidateSource
+  rawProfile         Json
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  agency             Agency              @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  lastConversation   Conversation?       @relation("CandidateLastConversation", fields: [lastConversationId], references: [id])
+  jobMatches         JobCandidateMatch[]
+  placements         Placement[]
+  timelineEvents     TimelineEvent[]
+  pipelineItems      JobPipelineItem[]
+
+  @@unique([agencyId, phone])
+  @@index([agencyId])
+  @@index([phone])
+  @@index([source])
+  @@index([lastSeenAt])
+  @@map("candidates")
+}
+
+model Conversation {
+  id                String            @id @default(uuid())
+  agencyId          String
+  contactId         String
+  lastMessageAt     DateTime          @default(now())
+  createdAt         DateTime          @default(now())
+  state             ConversationState @default(ACTIVE)
+  pausedReason      String?
+  updatedAt         DateTime          @updatedAt
+  memoryPack        Json?
+  memoryUpdatedAt   DateTime?
+  progressData      Json?
+  progressStage     String            @default("NEW")
+  progressUpdatedAt DateTime          @default(now())
+  candidateLastSeen Candidate[]       @relation("CandidateLastConversation")
+  agency            Agency            @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  contact           Contact           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  messages          Message[]
+  timelineEvents    TimelineEvent[]
+
+  @@index([agencyId])
+  @@index([contactId])
+  @@index([lastMessageAt])
+  @@index([progressStage])
+  @@index([progressUpdatedAt])
+  @@index([memoryUpdatedAt])
+  @@map("conversations")
+}
+
+model Message {
+  id                String                @id @default(uuid())
+  agencyId          String
+  contactId         String
+  conversationId    String
+  direction         MessageDirection
+  channel           MessageChannel
+  text              String
+  providerMessageId String?
+  deliveryStatus    MessageDeliveryStatus @default(QUEUED)
+  rawPayload        Json
+  createdAt         DateTime              @default(now())
+  deliveredAt       DateTime?
+  failedAt          DateTime?
+  failureReason     String?
+  readAt            DateTime?
+  candidateId       String?
+  senderRole        MessageSenderRole     @default(HUMAN)
+  agency            Agency                @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  contact           Contact               @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  conversation      Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  relatedTasks      Task[]
+
+  @@index([agencyId])
+  @@index([contactId])
+  @@index([conversationId])
+  @@index([candidateId])
+  @@index([createdAt])
+  @@index([deliveryStatus])
+  @@index([channel])
+  @@index([providerMessageId])
+  @@index([senderRole])
+  @@index([direction, senderRole])
+  @@map("messages")
+}
+
+model Task {
+  id                   String             @id @default(uuid())
+  agencyId             String
+  type                 TaskType
+  status               TaskStatus
+  relatedMessageId     String?
+  payload              Json
+  createdAt            DateTime           @default(now())
+  approvalStatus       TaskApprovalStatus @default(NOT_REQUIRED)
+  approvedAt           DateTime?
+  proposedAction       Json?
+  rejectedAt           DateTime?
+  rejectionReason      String?
+  failureReason        String?
+  retryCount           Int                @default(0)
+  approvedByOperatorId String?
+  candidateId          String?
+  dueAt                DateTime?
+  isSystemGenerated    Boolean            @default(false)
+  agency               Agency             @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  approvedByOperator   Operator?          @relation(fields: [approvedByOperatorId], references: [id])
+  relatedMessage       Message?           @relation(fields: [relatedMessageId], references: [id])
+
+  @@index([agencyId])
+  @@index([approvedByOperatorId])
+  @@index([relatedMessageId])
+  @@index([candidateId])
+  @@index([status])
+  @@index([approvalStatus])
+  @@index([type])
+  @@index([createdAt])
+  @@index([dueAt])
+  @@map("tasks")
+}
+
+model Operator {
+  id                   String                @id @default(uuid())
+  email                String                @unique
+  passwordHash         String
+  createdAt            DateTime              @default(now())
+  earningsSettings     EarningsSettings[]
+  monthlyEarnings      MonthlyEarnings[]
+  approvedTasks        Task[]
+  timelineEvents       TimelineEvent[]
+  updatedPipelineItems JobPipelineItem[]
+  reviewedSamples      MessageReviewSample[]
+
+  @@map("operators")
+}
+
+model Job {
+  id               String              @id @default(uuid())
+  agencyId         String
+  title            String
+  status           JobStatus           @default(ACTIVE)
+  tradeRequired    String
+  startDate        DateTime?
+  durationWeeks    Int?
+  hoursPerDay      Int?
+  daysPerWeek      Int?
+  positionsOpen    Int                 @default(1)
+  positionsFilled  Int                 @default(0)
+  siteName         String?
+  addressLine1     String?
+  addressLine2     String?
+  postcode         String?
+  city             String?
+  geoLat           Float?
+  geoLng           Float?
+  clientName       String?
+  clientType       String?
+  siteManagerName  String?
+  siteManagerPhone String?
+  isPremiumClient  Boolean             @default(false)
+  requirementsJson Json                @default("{}")
+  notes            String?
+  payRate          Float?
+  chargeRate       Float?
+  currency         String              @default("GBP")
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  candidateMatches JobCandidateMatch[]
+  agency           Agency              @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  placements       Placement[]
+  pipelineItems    JobPipelineItem[]
+
+  @@index([agencyId])
+  @@index([status])
+  @@map("jobs")
+}
+
+model JobCandidateMatch {
+  id          String    @id @default(uuid())
+  agencyId    String
+  jobId       String
+  candidateId String
+  score       Int
+  tier        MatchTier
+  reasons     String[]  @default([])
+  createdAt   DateTime  @default(now())
+  agency      Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([agencyId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@index([score])
+  @@index([tier])
+  @@map("job_candidate_matches")
+}
+
+model Placement {
+  id          String          @id @default(uuid())
+  agencyId    String
+  jobId       String
+  candidateId String
+  status      PlacementStatus @default(PENDING)
+  startDate   DateTime?
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  agency      Agency          @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  candidate   Candidate       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job         Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([agencyId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@map("placements")
+}
+
+model EarningsSettings {
+  id                 String   @id @default(uuid())
+  agencyId           String
+  operatorId         String
+  basePayMonthly     Int?
+  currency           String   @default("GBP")
+  commissionBrackets Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  agency             Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  operator           Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, operatorId])
+  @@index([agencyId])
+  @@index([operatorId])
+  @@map("earnings_settings")
+}
+
+model MonthlyEarnings {
+  id           String   @id @default(uuid())
+  agencyId     String
+  operatorId   String
+  year         Int
+  month        Int
+  revenueTotal Int
+  currency     String   @default("GBP")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  agency       Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  operator     Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, operatorId, year, month])
+  @@index([agencyId, year, month])
+  @@index([operatorId, year, month])
+  @@map("monthly_earnings")
+}
+
+model TimelineEvent {
+  id              String            @id @default(cuid())
+  agencyId        String
+  conversationId  String
+  contactId       String
+  candidateId     String?
+  type            TimelineEventType
+  actorRole       TimelineActorRole
+  actorOperatorId String?
+  summary         String            @db.VarChar(200)
+  data            Json?
+  dedupeKey       String?
+  createdAt       DateTime          @default(now())
+  operator        Operator?         @relation(fields: [actorOperatorId], references: [id])
+  agency          Agency            @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  candidate       Candidate?        @relation(fields: [candidateId], references: [id])
+  contact         Contact           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  conversation    Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, conversationId, createdAt])
+  @@index([agencyId, contactId, createdAt])
+  @@index([agencyId, type, createdAt])
+  @@map("timeline_events")
+}
+
+enum UserRole {
+  ADMIN
+  RECRUITER
+}
+
+enum ContactType {
+  CANDIDATE
+  CLIENT
+  UNKNOWN
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageChannel {
+  WHATSAPP
+  SMS
+  VOICE
+  EMAIL
+}
+
+enum MessageDeliveryStatus {
+  SENT
+  DELIVERED
+  FAILED
+  READ
+  QUEUED
+}
+
+enum MessageSenderRole {
+  HUMAN
+  AI
+  OPERATOR
+}
+
+enum TaskType {
+  APPROVAL_REQUIRED
+  FOLLOW_UP
+  ESCALATION
+  OUTREACH
+  CSCS_VERIFICATION
+}
+
+enum ConversationState {
+  ACTIVE
+  PAUSED_FOR_APPROVAL
+  PAUSED
+  CLOSED
+}
+
+enum TaskStatus {
+  OPEN
+  APPROVED
+  REJECTED
+  DONE
+  FAILED
+}
+
+enum TaskApprovalStatus {
+  NOT_REQUIRED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MessagingMode {
+  AUTOPILOT
+  HYBRID
+  APPROVAL_ONLY
+}
+
+enum CandidateSource {
+  WHATSAPP
+}
+
+enum JobStatus {
+  ACTIVE
+  URGENT
+  PAUSED
+  FILLED
+  CLOSED
+}
+
+enum MatchTier {
+  PROVEN
+  EXCELLENT
+  GOOD
+  WEAK
+}
+
+enum PlacementStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum TimelineEventType {
+  INBOUND_MESSAGE_RECEIVED
+  AI_SUGGESTION_CREATED
+  TASK_CREATED
+  TASK_APPROVED
+  TASK_REJECTED
+  PROGRESS_STAGE_CHANGED
+  MEMORY_PACK_UPDATED
+  CSCS_AUTO_VERIFIED
+  CSCS_APPROVED
+  CSCS_REJECTED
+  OUTREACH_SENT
+  FOLLOW_UP_CREATED
+  JOB_PIPELINE_UPDATED
+  JOB_PIPELINE_REMOVED
+  OUTREACH_TASK_CREATED
+  START_FOLLOWUP_CREATED
+  REVIEW_VERDICT_SET
+  REPLAY_INBOUND_STARTED
+  REPLAY_INBOUND_FINISHED
+  MEDIA_RECEIVED
+  VOICE_TRANSCRIBED
+  MEDIA_LINKED_TO_TASK
+  OPPORTUNITY_TASK_CREATED
+  SETTINGS_PLAYBOOK_UPDATED
+  OPEN_QUESTION_ADDED
+  OPEN_QUESTION_RESOLVED
+  OPEN_QUESTION_FOLLOWUP_CREATED
+  TASK_MARKED_STUCK
+  CSCS_VERIFICATION
+  UNDERFILLED_URGENT_JOB
+  DORMANT_CANDIDATES_MATCH_URGENT_JOB
+  FOLLOW_UP_AFTER_OFFER
+  DAY1_AFTERCARE_CHECKIN
+}
+
+enum TimelineActorRole {
+  SYSTEM
+  AI
+  OPERATOR
+}
+
+enum JobPipelineStage {
+  SHORTLISTED
+  OFFER_SENT
+  START_CONFIRMED
+  NO_SHOW
+  DROPPED
+}
+
+enum NoShowReason {
+  DID_NOT_TURN_UP
+  CANCELLED_LAST_MINUTE
+  PHONE_OFF
+  CLIENT_REJECTED_ON_DAY
+  UNKNOWN
+}
+
+enum DroppedReason {
+  NOT_INTERESTED
+  NOT_RESPONDING
+  FAILED_DOCS
+  FAILED_CSCS
+  CLIENT_REJECTED
+  OTHER
+}
+
+enum ReviewVerdict {
+  GOOD
+  NEEDS_IMPROVEMENT
+  UNSAFE
+}
+
+enum SampledReason {
+  EDITED
+  HIGH_RISK
+  RANDOM
+}
+
+enum GreetingStyle {
+  SHORT
+  NONE
+  NORMAL
+}
+
+enum SignatureStyle {
+  NONE
+  NAME
+  AGENCY
+}
+
+enum OpportunityActionLogStatus {
+  CREATED
+  SKIPPED
+  FAILED
+}
+
+model JobPipelineItem {
+  id                  String           @id @default(cuid())
+  agencyId            String
+  jobId               String
+  candidateId         String
+  stage               JobPipelineStage
+  notes               String?
+  startDate           DateTime?
+  payRate             Float?
+  shiftInfo           String?
+  noShowReason        NoShowReason?
+  droppedReason       DroppedReason?
+  updatedByOperatorId String?
+  data                Json?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  agency              Agency           @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  job                 Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate           Candidate        @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  updatedByOperator   Operator?        @relation(fields: [updatedByOperatorId], references: [id], onDelete: SetNull)
+
+  @@unique([agencyId, jobId, candidateId])
+  @@index([agencyId, jobId, stage])
+  @@index([agencyId, candidateId, updatedAt])
+  @@map("job_pipeline_items")
+}
+
+model MessageReviewSample {
+  id                   String         @id @default(cuid())
+  agencyId             String
+  taskId               String
+  conversationId       String?
+  candidateId          String?
+  jobId                String?
+  createdAt            DateTime       @default(now())
+  sampledReason        SampledReason
+  proposedText         String
+  finalText            String
+  editMetrics          Json
+  verdict              ReviewVerdict?
+  reviewedAt           DateTime?
+  reviewedByOperatorId String?
+  notes                String?
+  agency               Agency         @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  reviewedByOperator   Operator?      @relation(fields: [reviewedByOperatorId], references: [id], onDelete: SetNull)
+
+  @@unique([agencyId, taskId])
+  @@index([agencyId, verdict, createdAt])
+  @@index([agencyId, sampledReason, createdAt])
+  @@map("message_review_samples")
+}
+
+model AgencyPlaybook {
+  id                     String         @id @default(uuid())
+  agencyId               String         @unique
+  toneStyle              String         @default("UK recruiter, friendly, direct")
+  maxQuestionsPerMessage Int            @default(2)
+  greetingStyle          GreetingStyle  @default(SHORT)
+  forbiddenPhrases       Json           @default("[]")
+  requiredChecks         Json           @default("{}")
+  escalationRules        Json           @default("{}")
+  signatureStyle         SignatureStyle @default(NONE)
+  updatedAt              DateTime       @updatedAt
+  createdAt              DateTime       @default(now())
+  agency                 Agency         @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId])
+  @@map("agency_playbooks")
+}
+
+model OpportunityActionLog {
+  id                  String                     @id @default(cuid())
+  agencyId            String
+  opportunityKey      String
+  opportunityType     String
+  relatedJobId        String?
+  relatedCandidateId  String?
+  createdAt           DateTime                   @default(now())
+  createdByOperatorId String?
+  taskId              String?
+  status              OpportunityActionLogStatus
+  agency              Agency                     @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, opportunityKey, relatedCandidateId])
+  @@index([agencyId, opportunityType, createdAt])
+  @@map("opportunity_action_logs")
+}
