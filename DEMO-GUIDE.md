@@ -6,21 +6,30 @@ Written for someone who doesn't work in the code. Everything you need is here.
 
 ## 1. Start it
 
-Open the Terminal app, then copy and paste this one line:
+**Easiest way:** double-click **`Vantalos Demo.command`** in the project folder.
+Terminal opens, everything starts, your browser opens at the login page.
 
-```bash
-cd ~/Code/vantalos-recruiter && ./start-demo.sh
-```
-
-It takes about 20 seconds. When it's ready your browser opens automatically.
+(macOS may warn the first time — right-click the file, choose Open, then Open again.)
 
 **Login:** `admin@example.com` — **Password:** `admin123`
 
-To stop everything afterwards:
+**From Terminal instead**, paste this (it is one line):
 
 ```bash
-cd ~/Code/vantalos-recruiter && pnpm stop
+cd "/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking : Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary" && ./start-demo.sh
 ```
+
+To stop:
+
+```bash
+cd "/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking : Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary" && ./run stop
+```
+
+> **Tip:** to save typing that path every time, run this once:
+> ```bash
+> echo 'alias vr="cd \"/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking : Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary\""' >> ~/.zshrc && source ~/.zshrc
+> ```
+> After that, just type `vr` to jump to the project, then `./start-demo.sh`.
 
 ---
 
@@ -92,17 +101,17 @@ needed.
 See who you can pretend to be:
 
 ```bash
-cd ~/Code/vantalos-recruiter && pnpm demo:message --list
+cd "$VR" && ./run message --list
 ```
 
 Then send something:
 
 ```bash
-cd ~/Code/vantalos-recruiter && pnpm demo:message "Danny" "I'm free from Monday and I've got my CSCS card"
+cd "$VR" && ./run message "Danny" "I'm free from Monday and I've got my CSCS card"
 ```
 
 Refresh the console after a few seconds. To watch it think in real time, open a
-second Terminal window and run `pnpm logs`.
+second Terminal window and run `./run logs`.
 
 > **This works best once you've added an OpenAI key** (section 6). Without one,
 > the system still processes the message correctly but won't draft a reply —
@@ -115,7 +124,7 @@ second Terminal window and run `pnpm logs`.
 Puts everything back exactly as it started:
 
 ```bash
-cd ~/Code/vantalos-recruiter && pnpm demo:seed
+cd "$VR" && ./run seed
 ```
 
 Safe to run as often as you like.
@@ -132,11 +141,11 @@ the product actually thinking.
 3. Click **Create new secret key**, copy it
 4. Open the settings file:
    ```bash
-   open -e ~/Code/vantalos-recruiter/.env
+   ./set-key.sh
    ```
 5. Find the line `OPENAI_API_KEY=` and paste your key straight after the `=`,
    with no spaces. Save and close.
-6. Restart: `cd ~/Code/vantalos-recruiter && ./start-demo.sh`
+6. Restart: `cd "$VR" && ./start-demo.sh`
 
 The startup message will now say **AI replies: ON**.
 
@@ -177,9 +186,9 @@ and you'll also need a tunnel (ngrok) so Twilio can reach the app.
 **Nothing loads in the browser** — the app probably isn't running. Run
 `./start-demo.sh` again; it cleans up after itself.
 
-**"Port already in use"** — run `pnpm stop`, then start again.
+**"Port already in use"** — run `./run stop`, then start again.
 
-**A screen is empty that shouldn't be** — run `pnpm demo:seed` to rebuild the
+**A screen is empty that shouldn't be** — run `./run seed` to rebuild the
 data.
 
 **Something else** — the error is almost always at the bottom of:
@@ -195,17 +204,36 @@ Just run `./start-demo.sh`.
 
 ## 9. Where things live
 
+The project lives inside your VANTALOS structure:
+
 ```
-~/Code/vantalos-recruiter/
-├── start-demo.sh      ← the launcher
-├── .env               ← your settings and keys (never share this file)
-├── DEMO-GUIDE.md      ← this document
-├── src/               ← backend: webhooks, AI services, background workers
-├── app/ + components/ ← the operator console you see in the browser
-└── prisma/            ← database structure and demo data
+VANTALOS/01 PRODUCT/CR Era/
+  └── 04 Prior Thinking / Broad Product/
+        └── 01 WhatsApp Assistant (2025–Jan 2026)/
+              └── 01 Product Code/
+                    └── 01 Primary/          ← the code
+                          ├── Vantalos Demo.command  ← double-click to start
+                          ├── run                    ← all other commands
+                          ├── set-key.sh             ← store API keys safely
+                          ├── .env                   ← your keys (never share)
+                          ├── DEMO-GUIDE.md          ← this document
+                          ├── src/                   ← backend + AI + workers
+                          ├── app/ + components/     ← the browser console
+                          └── prisma/                ← database + demo data
 ```
 
-The code is also on GitHub at `Vantalos-Services-Ltd/vantalos-core-product`.
+Alongside it sits **01 Primary (superseded 2026-08-25)** — the original copy
+before any fixes. Safe to delete once you're happy; everything is also on
+GitHub at `Vantalos-Services-Ltd/vantalos-core-product`.
+
+### Why commands here start with ./run instead of pnpm
+
+The folder **04 Prior Thinking / Broad Product** contains a colon in its real
+name (macOS shows a colon as a slash). Unix uses the colon to separate entries
+in its list of program locations, so standard `pnpm` commands break here with
+"command not found". The `./run` script sidesteps this by calling each tool
+by its full location. Everything works — just use `./run <thing>` rather than
+`pnpm <thing>`. Type `./run` on its own to see the list.
 
 ---
 
@@ -216,7 +244,7 @@ Honest list, so nothing surprises you:
 - **The automated test suite doesn't run.** Every test file has a broken import.
   Nothing is verified automatically, so changes carry real risk until it's fixed.
 - **The backend isn't type-checked.** A second config (`tsconfig.api.json`) has
-  been added so it *can* be — run `pnpm typecheck:api` — but there are existing
+  been added so it *can* be — run `./run typecheck` — but there are existing
   errors to work through.
 - **Proactive WhatsApp outreach won't work on a real number** until message
   templates are added (see section 7).

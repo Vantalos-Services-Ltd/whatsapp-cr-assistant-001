@@ -8,6 +8,15 @@
 set -uo pipefail
 cd "$(dirname "$0")"
 
+# This project may live under a path containing a colon (macOS Finder shows a
+# POSIX ":" as "/"). PATH is colon-delimited, so node_modules/.bin cannot be put
+# on PATH from such a directory — "tsx: command not found". We therefore invoke
+# every tool by absolute path and never rely on PATH lookup.
+BIN="$(pwd)/node_modules/.bin"
+if [ ! -x "$BIN/tsx" ]; then
+  echo "Dependencies missing. Run: pnpm install"; exit 1
+fi
+
 BLUE='\033[0;34m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'; BOLD='\033[1m'
 
 say()  { echo -e "${BLUE}▸${NC} $1"; }
@@ -66,12 +75,12 @@ ok "Ready to start"
 # --- 3. optional data refresh -----------------------------------------------
 if [[ "${1:-}" == "--fresh" ]]; then
   say "Rebuilding demo data..."
-  pnpm demo:seed >/dev/null 2>&1 && ok "Demo data rebuilt" || die "Seed failed. Run 'pnpm demo:seed' to see the error."
+  "$BIN/tsx" prisma/demo-seed.ts >/dev/null 2>&1 && ok "Demo data rebuilt" || die "Seed failed. Run: ./run seed"
 fi
 
 # --- 4. backend -------------------------------------------------------------
 say "Starting backend..."
-pnpm dev:api > /tmp/vantalos-api.log 2>&1 &
+"$BIN/tsx" watch src/index.ts > /tmp/vantalos-api.log 2>&1 &
 for i in $(seq 1 40); do curl -s -o /dev/null http://localhost:3001/health 2>/dev/null && break; sleep 1; done
 if curl -s -o /dev/null http://localhost:3001/health 2>/dev/null; then
   ok "Backend running on port 3001"
@@ -82,7 +91,7 @@ fi
 
 # --- 5. web console ---------------------------------------------------------
 say "Starting web console..."
-pnpm dev:web > /tmp/vantalos-web.log 2>&1 &
+"$BIN/next" dev > /tmp/vantalos-web.log 2>&1 &
 for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:3000/operator/login 2>/dev/null && break; sleep 1; done
 if curl -s -o /dev/null http://localhost:3000/operator/login 2>/dev/null; then
   ok "Web console running on port 3000"
@@ -110,12 +119,12 @@ else
 fi
 echo ""
 echo "  Simulate a candidate message:"
-echo "    pnpm demo:message --list"
+echo "    ./run message --list"
 echo '    pnpm demo:message "Danny" "I can start Monday, got my CSCS card"'
 echo ""
-echo "  Watch what the system is doing:   pnpm logs"
-echo "  Reset the demo data:              pnpm demo:seed"
-echo "  Stop everything:                  pnpm stop"
+echo "  Watch what the system is doing:   ./run logs"
+echo "  Reset the demo data:              ./run seed"
+echo "  Stop everything:                  ./run stop"
 echo ""
 
 if command -v open >/dev/null 2>&1; then
