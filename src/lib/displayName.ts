@@ -40,7 +40,7 @@ export function buildDisplayName(input: {
   }
   
   // Priority 3: Formatted phone fallback
-  return { displayName: phone || "—", trade: null, phone: phone || "" };
+  return { displayName: phone || "Unknown contact", trade: null, phone: phone || "" };
 }
 
 

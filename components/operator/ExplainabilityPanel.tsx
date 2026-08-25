@@ -26,14 +26,27 @@ interface ExplainabilityPanelProps {
  * - Default collapsed to avoid clutter
  * - Auto expand when riskLevel is HIGH or when suggestedMessage is missing
  */
+/** Internal action codes must not surface in the UI. */
+function humaniseAction(code: string): string {
+  const map: Record<string, string> = {
+    SEND_MESSAGE: "Send the reply",
+    REQUEST_INFO: "Ask for more information",
+    ESCALATE: "Escalate to a colleague",
+    NO_ACTION: "Do nothing for now",
+  };
+  if (map[code]) return map[code];
+  const w = code.replace(/_/g, " ").toLowerCase().trim();
+  return w.charAt(0).toUpperCase() + w.slice(1);
+}
+
 export function ExplainabilityPanel({
   explainability,
   riskLevel,
   suggestedMessage,
 }: ExplainabilityPanelProps) {
   // Auto-expand if HIGH risk or missing suggested message
-  const shouldAutoExpand = riskLevel === "HIGH" || !suggestedMessage;
-  const [isExpanded, setIsExpanded] = useState(shouldAutoExpand);
+  const shouldAutoExpand = true;
+  const [isExpanded, setIsExpanded] = useState(true);
 
   // Update expanded state when auto-expand conditions change
   useEffect(() => {
@@ -66,11 +79,11 @@ export function ExplainabilityPanel({
   const getRiskBadgeColor = (level: "LOW" | "MEDIUM" | "HIGH"): string => {
     switch (level) {
       case "LOW":
-        return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400";
+        return "bg-green-100 text-green-900 border-green-300 dark:bg-green-900/30 dark:text-green-200";
       case "MEDIUM":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400";
+        return "bg-amber-100 text-amber-950 border-amber-400 dark:bg-amber-900/30 dark:text-amber-100";
       case "HIGH":
-        return "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400";
+        return "bg-red-100 text-red-950 border-red-400 dark:bg-red-900/30 dark:text-red-100";
       default:
         return "";
     }
@@ -80,16 +93,18 @@ export function ExplainabilityPanel({
     <div className="border-t pt-4 space-y-2">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wide hover:text-foreground transition-colors"
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? "Hide why this was suggested" : "Show why this was suggested"}
+        className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wide hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
       >
-        <span>Why</span>
+        <span>Why this suggestion</span>
         <div className="flex items-center gap-2">
           {effectiveRiskLevel && (
             <Badge
               variant={getRiskBadgeVariant(effectiveRiskLevel)}
               className={`text-xs ${getRiskBadgeColor(effectiveRiskLevel)}`}
             >
-              {effectiveRiskLevel}
+              {effectiveRiskLevel === "HIGH" ? "● " : effectiveRiskLevel === "MEDIUM" ? "◐ " : "○ "}{effectiveRiskLevel} RISK
             </Badge>
           )}
           {isExpanded ? (
@@ -172,7 +187,7 @@ export function ExplainabilityPanel({
               <ul className="space-y-2">
                 {explainability.alternatives.map((alt, idx) => (
                   <li key={idx} className="text-sm text-foreground">
-                    <div className="font-medium">{alt.action}</div>
+                    <div className="font-medium">{humaniseAction(alt.action)}</div>
                     <div className="text-muted-foreground text-xs mt-0.5">{alt.reason}</div>
                   </li>
                 ))}

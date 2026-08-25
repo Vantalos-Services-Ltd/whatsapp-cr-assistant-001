@@ -173,8 +173,9 @@ fastify.post("/api/tasks/cscs-verification/create", { preHandler: [requireAuth] 
 fastify.post("/api/tasks/:taskId/cscs/verify", verifyCscsHandler);
 
 // Operator routes
-fastify.get("/api/operator/tasks", listTasksHandler);
-fastify.get("/api/operator/conversations/:conversationId", getConversationHandler);
+// NOTE: /api/operator/tasks and /api/operator/conversations/:id were removed —
+// they bound the same handlers as /api/tasks and /api/conversations/:id and no
+// client called them. /api/operator/messages is still used by lib/api.ts.
 fastify.get("/api/operator/messages", listMessagesHandler);
 
 // Dashboard routes

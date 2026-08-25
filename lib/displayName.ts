@@ -82,8 +82,9 @@ export function getPrimaryDisplay(input: PersonDisplayInput): string {
     return "Contact";
   }
   
-  // Last resort
-  return "—";
+  // Last resort. Never render a bare dash where a person's name belongs — it
+  // reads as a rendering fault and gives the operator nothing to act on.
+  return "Unknown contact";
 }
 
 /**

@@ -157,7 +157,7 @@ export default function OperatorDashboard() {
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <div className="rounded-lg border bg-card p-6">
           <div className="flex flex-col space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -232,8 +232,6 @@ export default function OperatorDashboard() {
             )}
           </div>
         </div>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border bg-card p-6">
           <div className="flex flex-col space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -337,7 +335,7 @@ export default function OperatorDashboard() {
                           task.riskLevel === "HIGH"
                             ? "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
                             : task.riskLevel === "MEDIUM"
-                            ? "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400"
+                            ? "bg-amber-50 text-amber-900 dark:bg-yellow-900/20 dark:text-yellow-400"
                             : "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
                         }`}
                       >

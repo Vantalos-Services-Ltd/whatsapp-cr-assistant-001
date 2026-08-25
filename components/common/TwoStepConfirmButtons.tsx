@@ -171,13 +171,16 @@ export function TwoStepConfirmButtons({
         {/* Left Button */}
         {mode === "idle" ? (
           onApprove ? (
+            // Approve is the primary action and is styled as such. It previously
+            // rendered as an outline button, visually identical in weight to
+            // Reject, which gave the destructive path equal prominence.
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               size={buttonSize}
               onClick={handleApproveClick}
               disabled={disabled || isLoading}
-              className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm"
             >
               {approveLabel}
             </Button>

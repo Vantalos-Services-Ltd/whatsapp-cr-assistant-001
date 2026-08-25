@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarNav, SidebarNavItem } from "@/components/ui/sidebar";
 import { checkAuth, logout } from "@/lib/auth";
@@ -10,7 +11,7 @@ import { StatusPill } from "@/components/common/StatusPill";
 import { NetworkStatusMonitor } from "@/components/common/NetworkStatusMonitor";
 import { initDataStatusStore } from "@/lib/api";
 
-function HeaderContent() {
+function HeaderContent({ onMenuClick }: { onMenuClick: () => void }) {
   const router = useRouter();
   const { state, deriveStatus, setRefreshing, setUpToDate, setOutOfDate, setOffline } = useDataStatusStore();
   const effectiveStatus = deriveStatus();
@@ -33,14 +34,29 @@ function HeaderContent() {
   return (
     <header className="flex h-16 items-center border-b bg-background px-6 shrink-0">
       <div className="flex items-center justify-between w-full">
-        <h1 className="text-xl font-semibold text-foreground">Vantalos</h1>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onMenuClick}
+            aria-label="Open navigation menu"
+            className="md:hidden rounded p-2 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <span className="text-sm font-medium text-muted-foreground">Operator console</span>
+        </div>
         <div className="flex items-center gap-4">
           <StatusPill
             status={effectiveStatus}
             lastSuccessAt={state.lastSuccessAt}
             lastErrorMessage={state.lastErrorMessage}
           />
-          <span className="text-xs text-muted-foreground uppercase tracking-wide">Local</span>
+          <span
+            className="hidden sm:inline text-xs text-muted-foreground uppercase tracking-wide"
+            title="Running against the local database on this machine — not live candidate data"
+          >
+            Local data
+          </span>
           <button
             onClick={handleLogout}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -61,6 +77,10 @@ export default function OperatorLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Close the mobile drawer whenever the route changes
+  useEffect(() => { setMobileNavOpen(false); }, [pathname]);
 
   useEffect(() => {
     async function verifyAuth() {
@@ -93,12 +113,40 @@ export default function OperatorLayout({
     <OperatorProviders>
       <NetworkStatusMonitor />
       <div className="flex h-screen overflow-hidden">
-        <Sidebar>
-          <SidebarHeader>
-            <h2 className="text-lg font-semibold text-foreground">Vantalos</h2>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarNav>
+        {/* Backdrop shown only while the drawer is open on small screens */}
+        {mobileNavOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/40 md:hidden"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+        {/* Sidebar: a slide-over drawer under 768px, static from md upwards.
+            It previously occupied a third of a phone screen with no way to
+            dismiss it, leaving the task list and approval panel unreachable. */}
+        <div
+          className={`fixed inset-y-0 left-0 z-40 transition-transform duration-200 md:static md:z-auto md:translate-x-0 ${
+            mobileNavOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <Sidebar>
+            <SidebarHeader>
+              <div className="flex items-center justify-between w-full">
+                <h2 className="text-lg font-semibold text-foreground">Vantalos</h2>
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen(false)}
+                  aria-label="Close navigation menu"
+                  className="md:hidden rounded p-2 hover:bg-muted"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </SidebarHeader>
+            <SidebarContent>
+              {/* The drawer closes via the pathname effect above, so nav items
+                  need no extra handler. */}
+              <SidebarNav>
               <SidebarNavItem href="/operator">Dashboard</SidebarNavItem>
               <SidebarNavItem href="/operator/inbox">Inbox</SidebarNavItem>
               <SidebarNavItem href="/operator/tasks">Tasks</SidebarNavItem>
@@ -110,10 +158,11 @@ export default function OperatorLayout({
               <SidebarNavItem href="/operator/settings">Settings</SidebarNavItem>
             </SidebarNav>
           </SidebarContent>
-        </Sidebar>
-        <div className="flex flex-1 flex-col h-full">
-          <HeaderContent />
-          <main className="flex-1 overflow-y-auto bg-background p-6">
+          </Sidebar>
+        </div>
+        <div className="flex flex-1 flex-col h-full min-w-0">
+          <HeaderContent onMenuClick={() => setMobileNavOpen(true)} />
+          <main className="flex-1 overflow-y-auto bg-background p-4 md:p-6">
             {children}
           </main>
         </div>

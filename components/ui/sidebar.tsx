@@ -8,7 +8,7 @@ const Sidebar = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex h-full w-64 flex-col border-r bg-card",
+      "flex h-full w-64 shrink-0 flex-col border-r bg-card",
       className
     )}
     {...props}
@@ -71,7 +71,7 @@ const SidebarNavItem = React.forwardRef<
   <a
     ref={ref}
     className={cn(
-      "flex items-center rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+      "flex min-h-[44px] items-center rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       className
     )}
     {...props}

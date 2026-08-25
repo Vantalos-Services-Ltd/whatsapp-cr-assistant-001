@@ -47,7 +47,7 @@ function getRiskBadgeColor(riskLevel: "LOW" | "MEDIUM" | "HIGH" | null): string 
     case "LOW":
       return "text-green-600";
     case "MEDIUM":
-      return "text-yellow-600";
+      return "text-amber-800";
     case "HIGH":
       return "text-red-600";
     default:
@@ -487,8 +487,10 @@ export default function InboxPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-6 overflow-hidden">
-        <div className="flex-1 overflow-hidden">
+      <div className="flex flex-1 flex-col gap-6 overflow-hidden lg:flex-row">
+        {/* On phones the list is hidden once a task is open, so the detail pane
+            gets the full width; picking a task acts as a drill-down. */}
+        <div className={`min-w-0 flex-1 overflow-hidden ${selectedTask ? "hidden lg:block" : ""}`}>
           <Tabs
             value={activeTab}
             onValueChange={(value) => {

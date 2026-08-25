@@ -6,6 +6,13 @@ import type { Task, Message, Conversation, Contact, TimelineEvent, Operator, Mes
 import type { TaskListItemDTO, MessageDTO, ConversationDTO, TimelineEventDTO, PipelineItemDTO, ReviewSampleDTO } from "./operator.ts";
 import type { PipelineItemEnriched } from "../services/jobPipelineService.ts";
 import { buildDisplayName } from "../lib/displayName.ts";
+import {
+  labelForActionType,
+  labelForIntent,
+  labelForOpportunity,
+  labelForTaskType,
+  buildApprovalReason,
+} from "../shared/taskLabels.ts";
 import type { MessageDirection } from "@prisma/client";
 import { sanitizeExplainability } from "../../shared/types/explainability.ts";
 
@@ -126,15 +133,16 @@ function extractSummary(
       if (Array.isArray(reasons) && reasons.length > 0 && typeof reasons[0] === "string") {
         return reasons[0];
       }
-      return opportunityType.replace(/_/g, " ");
+      return labelForOpportunity(opportunityType);
     }
   }
 
-  const actionType = extractActionType(proposedAction);
-  const intent = extractIntent(payload);
+  // Translate internal codes into wording an operator can read.
+  const actionType = labelForActionType(extractActionType(proposedAction));
+  const intent = labelForIntent(extractIntent(payload));
 
   if (actionType && intent) {
-    return `${actionType}: ${intent}`;
+    return `${actionType} — ${intent.toLowerCase()}`;
   }
 
   if (actionType) {
@@ -142,7 +150,7 @@ function extractSummary(
   }
 
   if (intent) {
-    return `Intent: ${intent}`;
+    return intent;
   }
 
   return null;
@@ -153,10 +161,31 @@ function extractSummary(
  * Returns why approval was required (escalation reason, low confidence, etc.)
  * For opportunity tasks, returns opportunity reasons
  */
+/**
+ * Avoid printing the same sentence twice in one row. Opportunity tasks derived
+ * their summary and their approval reason from the same source, so the list
+ * rendered the identical phrase as both title and subtitle.
+ */
+function dedupeSummary(
+  summary: string | null,
+  approvalReason: string | null,
+  taskType: string
+): string | null {
+  if (summary && approvalReason && summary.trim() === approvalReason.trim()) {
+    return labelForTaskType(taskType);
+  }
+  return summary;
+}
+
 function extractApprovalReason(payload: unknown): string | null {
   if (!payload || typeof payload !== "object") {
     return null;
   }
+
+  // Prefer an explicit approvalReason written at task-creation time. This was
+  // previously never read, so operators saw no reason on most tasks.
+  const explicit = buildApprovalReason(payload);
+  if (explicit) return explicit;
 
   const p = payload as Record<string, unknown>;
   
@@ -183,13 +212,13 @@ function extractApprovalReason(payload: unknown): string | null {
       return String(replyDecision.escalationReason || "Requires approval");
     }
     if (reason === "low_confidence") {
-      return "Low confidence - requires review";
+      return "AI was unsure — needs a human check";
     }
     if (reason === "approval_only_mode") {
-      return "Approval-only mode";
+      return "Agency policy: every reply needs approval";
     }
     if (reason === "hybrid_requires_approval") {
-      return "Hybrid mode - requires approval";
+      return "Agency policy: this reply needs approval";
     }
   }
 
@@ -328,7 +357,7 @@ export function toTaskListItemDTO(task: TaskWithRelations & { _candidate?: { nam
     displayName,
     trade,
     phone,
-    summary: extractSummary(task.payload, task.proposedAction),
+    summary: dedupeSummary(extractSummary(task.payload, task.proposedAction), extractApprovalReason(task.payload), task.type),
     suggestedMessage: extractSuggestedMessage(task.proposedAction, task.payload),
     approvalReason: extractApprovalReason(task.payload),
     payload: task.payload, // Include full payload for task detail views (especially CSCS_VERIFICATION)

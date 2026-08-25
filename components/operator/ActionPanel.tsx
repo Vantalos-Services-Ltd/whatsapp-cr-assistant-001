@@ -9,6 +9,7 @@ import { useToast } from "@/components/toast";
 import { TwoStepConfirmButtons } from "@/components/common/TwoStepConfirmButtons";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { ExplainabilityPanel } from "./ExplainabilityPanel";
+import { useApprovalShortcuts } from "@/components/common/useApprovalShortcuts";
 
 interface ActionPanelProps {
   task: TaskListItemDTO;
@@ -73,7 +74,7 @@ export function ActionPanel({ task, onActionComplete }: ActionPanelProps) {
   const inboundText = 
     taskAny.relatedMessage?.text ?? 
     taskAny.payload?.lastMessageText ?? 
-    "(No inbound message found)";
+    "This is outreach — the candidate hasn\u2019t messaged yet.";
 
   // Robust resolver for suggested message
   // Check multiple sources: proposedAction, payload.suggestedMessage (for opportunity tasks), payload.pendingReplyText
@@ -218,6 +219,14 @@ export function ActionPanel({ task, onActionComplete }: ActionPanelProps) {
       setIsLoading(false);
     }
   };
+
+  // Keyboard: A approves, R rejects. Inert while typing in the message box.
+  useApprovalShortcuts({
+    onApprove: () => { if (!isLoading) void handleApprove(); },
+    onReject: () => { if (!isLoading) void handleReject(); },
+    enabled: Boolean(task),
+  });
+
 
   const handleCopyMessage = () => {
     if (editedMessage) {

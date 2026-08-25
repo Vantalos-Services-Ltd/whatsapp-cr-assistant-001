@@ -242,7 +242,7 @@ export default function TasksPage() {
                                 task.riskLevel === "HIGH"
                                   ? "text-red-600"
                                   : task.riskLevel === "MEDIUM"
-                                  ? "text-yellow-600"
+                                  ? "text-amber-800"
                                   : "text-green-600"
                               }
                             >

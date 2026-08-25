@@ -7,6 +7,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "../db/prisma.ts";
 import { TaskStatus, TaskApprovalStatus, TaskType, ConversationState } from "@prisma/client";
 import { toTaskListItemDTO } from "../dto/transformers.ts";
+import { enrichTasksWithCandidates } from "../dto/enrichTasks.ts";
 import type { TaskListItemDTO } from "../dto/operator.ts";
 import { estimateTaskPriority } from "../services/taskPriority.ts";
 import { requireAgencyId } from "../utils/agencyContext.ts";
@@ -36,24 +37,30 @@ export async function listAllTasksHandler(
   const offset = parseInt(request.query.offset || "0", 10);
 
   try {
-    const where: any = {};
+    const agencyId = await requireAgencyId(request);
+
+    // Scope to the caller's agency. This query was previously unscoped.
+    const where: any = { agencyId };
 
     // Apply filter
     if (filter === "pending") {
       where.status = TaskStatus.OPEN;
       where.approvalStatus = TaskApprovalStatus.PENDING;
-      where.type = TaskType.APPROVAL_REQUIRED; // Only show actionable approval tasks
+      // All task types that can require a human decision. CSCS_VERIFICATION
+      // and ESCALATION were previously omitted, so this "all tasks" view showed
+      // fewer rows than the Inbox.
+      where.type = { in: [TaskType.APPROVAL_REQUIRED, TaskType.CSCS_VERIFICATION, TaskType.ESCALATION, TaskType.OUTREACH] };
     } else if (filter === "approved") {
       where.status = TaskStatus.APPROVED;
       // Show approved tasks that were actionable
-      where.type = { in: [TaskType.APPROVAL_REQUIRED, TaskType.FOLLOW_UP, TaskType.OUTREACH] };
+      where.type = { in: [TaskType.APPROVAL_REQUIRED, TaskType.FOLLOW_UP, TaskType.OUTREACH, TaskType.CSCS_VERIFICATION, TaskType.ESCALATION] };
     } else if (filter === "failed") {
       where.status = TaskStatus.FAILED;
       // Show failed tasks that were actionable
-      where.type = { in: [TaskType.APPROVAL_REQUIRED, TaskType.FOLLOW_UP, TaskType.OUTREACH] };
+      where.type = { in: [TaskType.APPROVAL_REQUIRED, TaskType.FOLLOW_UP, TaskType.OUTREACH, TaskType.CSCS_VERIFICATION, TaskType.ESCALATION] };
     } else if (filter === "all") {
       // "all" shows only actionable tasks (exclude informational/logging tasks)
-      where.type = { in: [TaskType.APPROVAL_REQUIRED, TaskType.FOLLOW_UP, TaskType.OUTREACH] };
+      where.type = { in: [TaskType.APPROVAL_REQUIRED, TaskType.FOLLOW_UP, TaskType.OUTREACH, TaskType.CSCS_VERIFICATION, TaskType.ESCALATION] };
     }
 
     const tasks = await prisma.task.findMany({
@@ -79,8 +86,11 @@ export async function listAllTasksHandler(
       skip: 0,
     });
 
+    // Attach candidate details so names render the same way as the Inbox.
+    const enrichedTasks = await enrichTasksWithCandidates(agencyId, tasks as any[]);
+
     // Compute priority for each task
-    const tasksWithPriority = tasks.map((task) => {
+    const tasksWithPriority = enrichedTasks.map((task: any) => {
       const priority = estimateTaskPriority(task);
       return {
         ...task,

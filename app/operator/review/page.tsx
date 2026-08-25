@@ -64,7 +64,7 @@ function getVerdictBadge(verdict: "GOOD" | "NEEDS_IMPROVEMENT" | "UNSAFE" | null
       );
     case "NEEDS_IMPROVEMENT":
       return (
-        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400">
+        <Badge variant="outline" className="bg-amber-50 text-amber-900 border-amber-300 dark:bg-yellow-900/20 dark:text-yellow-400">
           Needs Improvement
         </Badge>
       );
