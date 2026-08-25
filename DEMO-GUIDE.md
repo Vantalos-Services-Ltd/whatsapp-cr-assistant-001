@@ -181,6 +181,14 @@ and you'll also need a tunnel (ngrok) so Twilio can reach the app.
 
 ---
 
+## 7b. Moving to Supabase
+
+See **SUPABASE-SETUP.md** in this folder — verified against Supabase's current
+documentation, including the dedicated database user, which connection string to
+use, and why you should switch the Data API off rather than configure RLS.
+
+---
+
 ## 8. If something goes wrong
 
 **Nothing loads in the browser** — the app probably isn't running. Run
