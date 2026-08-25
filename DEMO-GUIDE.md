@@ -16,18 +16,18 @@ Terminal opens, everything starts, your browser opens at the login page.
 **From Terminal instead**, paste this (it is one line):
 
 ```bash
-cd "/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking : Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary" && ./start-demo.sh
+cd "/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking - Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary" && ./start-demo.sh
 ```
 
 To stop:
 
 ```bash
-cd "/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking : Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary" && ./run stop
+cd "/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking - Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary" && ./run stop
 ```
 
 > **Tip:** to save typing that path every time, run this once:
 > ```bash
-> echo 'alias vr="cd \"/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking : Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary\""' >> ~/.zshrc && source ~/.zshrc
+> echo 'alias vr="cd \"/Users/joe/Documents/VANTALOS/01 PRODUCT/CR Era/04 Prior Thinking - Broad Product/01 WhatsApp Assistant (2025–Jan 2026)/01 Product Code/01 Primary\""' >> ~/.zshrc && source ~/.zshrc
 > ```
 > After that, just type `vr` to jump to the project, then `./start-demo.sh`.
 
@@ -208,7 +208,7 @@ The project lives inside your VANTALOS structure:
 
 ```
 VANTALOS/01 PRODUCT/CR Era/
-  └── 04 Prior Thinking / Broad Product/
+  └── 04 Prior Thinking - Broad Product/
         └── 01 WhatsApp Assistant (2025–Jan 2026)/
               └── 01 Product Code/
                     └── 01 Primary/          ← the code
@@ -226,14 +226,17 @@ Alongside it sits **01 Primary (superseded 2026-08-25)** — the original copy
 before any fixes. Safe to delete once you're happy; everything is also on
 GitHub at `Vantalos-Services-Ltd/vantalos-core-product`.
 
-### Why commands here start with ./run instead of pnpm
+### Two ways to run things
 
-The folder **04 Prior Thinking / Broad Product** contains a colon in its real
-name (macOS shows a colon as a slash). Unix uses the colon to separate entries
-in its list of program locations, so standard `pnpm` commands break here with
-"command not found". The `./run` script sidesteps this by calling each tool
-by its full location. Everything works — just use `./run <thing>` rather than
-`pnpm <thing>`. Type `./run` on its own to see the list.
+Both work:
+
+- `./run seed`, `./run message`, `./run stop` — the shorthand, recommended
+- `pnpm demo:seed`, `pnpm stop` — standard commands, for developers
+
+Type `./run` on its own to see everything available.
+
+(An earlier version of this folder had a colon in its name, which broke all
+standard tooling. It was renamed on 25 August 2026 to fix that permanently.)
 
 ---
 

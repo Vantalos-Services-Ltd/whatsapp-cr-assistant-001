@@ -4,16 +4,14 @@
 #
 # WHY THIS EXISTS
 # ---------------
-# This project lives under a folder whose name contains a colon
-# ("04 Prior Thinking : Broad Product" — macOS Finder displays a POSIX ":" as
-# a "/"). PATH is a colon-delimited list, so when pnpm/npm try to add
-# node_modules/.bin to PATH, the shell splits the path in half and every tool
-# becomes "command not found".
+# A convenience wrapper so common jobs have short, memorable names, and so the
+# project keeps working even if it is moved somewhere awkward: every tool is
+# invoked by absolute path rather than relying on PATH lookup.
 #
-# There is no escaping mechanism for this in Unix. So instead of relying on
-# PATH, this script calls every tool by its absolute path, which works fine.
-#
-# Use ./run instead of pnpm for everything below.
+# (Historically this was a necessity, not a convenience — the project sat under
+# a folder whose name contained a colon, and PATH is colon-delimited, so no
+# tool could be found. That folder was renamed on 2026-08-25. Standard pnpm
+# commands work again; this wrapper is kept because it is easier to remember.)
 #
 #   ./run seed                       rebuild the demo data
 #   ./run message --list             who you can send a message as
