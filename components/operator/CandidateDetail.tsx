@@ -78,10 +78,19 @@ export function CandidateDetail({ candidate, loading, onClose }: CandidateDetail
             })}
             className="text-xl font-semibold"
           />
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close candidate panel">
             <X className="h-4 w-4" />
           </Button>
         </div>
+        {/* A candidate can be viewed in three places (this panel, the Contacts
+            drawer, and the full page). Contacts already links to the full page;
+            this panel did not, leaving search results as a dead end. */}
+        <a
+          href={`/operator/candidates/${candidate.candidateId}`}
+          className="mt-2 inline-block text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+        >
+          View full profile →
+        </a>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
