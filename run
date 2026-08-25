@@ -97,35 +97,19 @@ case "$CMD" in
     exec ./set-key.sh "$@" ;;
 
   compare|version)
-    # Flip the running app between the old (main) and new (ux-and-dedupe)
-    # versions so they can be compared side by side in the browser.
-    which="${1:-}"
-    if [ -n "$(git status --porcelain)" ]; then
-      echo -e "${RED}✗${NC} You have uncommitted changes. Commit or stash them first."; exit 1
-    fi
-    case "$which" in
-      old|main)     target=main ;;
-      new|ux|fixed) target=ux-and-dedupe ;;
-      *) echo "Usage: ./run compare old   |   ./run compare new"
-         echo "Currently showing: $(git branch --show-current)"; exit 0 ;;
-    esac
-    echo "Switching to $target …"
-    lsof -ti tcp:3000 -ti tcp:3001 2>/dev/null | xargs kill -9 2>/dev/null
-    sleep 2
-    git checkout "$target" -q || exit 1
-    rm -rf .next
-    if [ -f ./start-demo.sh ]; then
-      exec ./start-demo.sh
-    else
-      echo "(the old version has no launcher — starting it manually)"
-      pnpm dev:api > /tmp/vantalos-api.log 2>&1 &
-      pnpm dev:web > /tmp/vantalos-web.log 2>&1 &
-      echo ""
-      echo "  Old version starting at http://localhost:3000/operator"
-      echo "  Give it ~20 seconds, then refresh."
-      echo "  Come back with:  ./run compare new"
-      echo ""
-    fi
+    echo ""
+    echo "  Version switching moved OUT of this script."
+    echo ""
+    echo "  Switching to the old version replaced this file (it only exists on the"
+    echo "  new branch), leaving no way back. The switcher now lives one folder up:"
+    echo ""
+    echo "      '../Compare Versions.command'"
+    echo ""
+    echo "  Double-click it in Finder, or run:"
+    echo "      \"$(cd .. && pwd)/Compare Versions.command\""
+    echo ""
+    echo "  Currently on: $(git branch --show-current)"
+    echo ""
     ;;
 
   start)

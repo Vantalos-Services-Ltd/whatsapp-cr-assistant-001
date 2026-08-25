@@ -10,17 +10,19 @@ before deciding whether to merge.
 
 ## See them for yourself
 
-From the project folder:
+**Double-click `Compare Versions.command`** — it sits in the folder *above*
+the code, next to `01 Primary`.
 
-```bash
-./run compare old     # switches the running app to the OLD version
-./run compare new     # switches back to the NEW version
-```
+It tells you which version is currently running and offers to switch to the
+other one. Run it again to switch back.
 
-Each takes about 20 seconds, then refresh http://localhost:3000/operator
-(`admin@example.com` / `admin123`). Flip back and forth as often as you like —
-nothing is lost either way, and the demo data stays the same so you are
-comparing like with like.
+> It lives outside the repository on purpose. An earlier version lived inside
+> it, which broke immediately: switching to the old version removed the script,
+> because the script only exists on the new branch.
+
+Each switch takes about 20 seconds, then refresh
+http://localhost:3000/operator (`admin@example.com` / `admin123`). The demo
+data stays the same either way, so you are comparing like with like.
 
 **Best screen to compare:** Inbox → click **Kieran Doyle**. Every meaningful
 difference is visible on that one screen.
