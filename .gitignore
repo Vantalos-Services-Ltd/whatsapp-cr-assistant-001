@@ -69,3 +69,6 @@ out/
 # Optional: Uncomment if you want to ignore Prisma migrations
 # prisma/migrations/
 
+
+# Local backups created by set-key.sh — never commit these
+.env.backup-*
