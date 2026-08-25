@@ -3,7 +3,7 @@
  */
 
 import pino from "pino";
-import { PrismaClient, TaskType, TaskStatus, TaskApprovalStatus } from "@prisma/client";
+import { TaskType, TaskStatus, TaskApprovalStatus } from "@prisma/client";
 import { scopeWhere } from "../../db/tenantScope.ts";
 import { createTimelineEvent } from "../timelineService.ts";
 import { getOpportunities } from "./opportunityEngine.ts";
@@ -11,7 +11,7 @@ import { getTemplateForType, buildTemplateContext } from "./opportunityTemplates
 import type { Opportunity } from "./types.ts";
 
 const log = pino({ name: "opportunityTaskCreator" });
-const prisma = new PrismaClient();
+import { prisma } from "../../db/prisma.ts";
 
 /**
  * Create tasks for an opportunity

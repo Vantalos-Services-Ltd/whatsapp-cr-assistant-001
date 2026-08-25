@@ -6,7 +6,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { requireAuth } from "../middleware/auth.ts";
 import { requireAgencyId } from "../utils/agencyContext.ts";
-import { PrismaClient, TaskType, TaskStatus } from "@prisma/client";
+import { TaskType, TaskStatus } from "@prisma/client";
 import { scopeWhere } from "../db/tenantScope.ts";
 import { createFollowUpTaskForQuestion } from "../services/continuity/followUpTaskCreator.ts";
 import { getPlaybook } from "../services/playbook/playbookService.ts";
@@ -14,7 +14,7 @@ import { createTimelineEvent } from "../services/timelineService.ts";
 import type { OpenQuestionKey } from "../../shared/types/memoryPack.ts";
 import { sanitizeMemoryPack } from "../../shared/types/memoryPack.ts";
 
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma.ts";
 
 export async function conversationRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", requireAuth);

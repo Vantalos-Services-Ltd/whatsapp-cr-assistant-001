@@ -4,7 +4,7 @@
 
 import { Worker, type Job } from "bullmq";
 import pino from "pino";
-import { PrismaClient, TaskType, TaskStatus } from "@prisma/client";
+import { TaskType, TaskStatus } from "@prisma/client";
 import { connectionOptions } from "../queues/queue.ts";
 import {
   extractCscsDetailsFromImage,
@@ -17,7 +17,7 @@ import { applyProgressStateMachine } from "../services/progress/stateMachine.ts"
 import type { CandidateSnapshot, TaskFlags, PlacementStatus } from "../services/progress/stateMachineTypes.ts";
 
 const log = pino({ name: "cscsAutoVerifyWorker" });
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma.ts";
 
 type CscsAutoVerifyJobData = { taskId: string };
 

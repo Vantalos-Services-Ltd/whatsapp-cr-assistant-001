@@ -1,13 +1,13 @@
 import { Worker, type Job } from "bullmq";
 import pino from "pino";
-import { PrismaClient, TaskStatus, TaskApprovalStatus, MessageDirection, ConversationState, MessageDeliveryStatus } from "@prisma/client";
+import { TaskStatus, TaskApprovalStatus, MessageDirection, ConversationState, MessageDeliveryStatus } from "@prisma/client";
 import { connectionOptions } from "../queues/queue.ts";
 import { executeProposedAction } from "../services/actionExecutor.ts";
 import { enqueueApprovedTask } from "../queues/approvedTasksQueue.ts";
 import { suggestActionWithAI } from "../services/aiActionSuggester.ts";
 
 const log = pino({ name: "approvedTaskWorker" });
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma.ts";
 
 type ApprovedTaskJobData = { taskId: string };
 

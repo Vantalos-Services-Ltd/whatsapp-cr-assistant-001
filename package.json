@@ -27,7 +27,14 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "demo": "./start-demo.sh",
+    "demo:seed": "tsx prisma/demo-seed.ts",
+    "demo:message": "tsx scripts/demo-message.ts",
+    "demo:reset": "tsx prisma/demo-seed.ts",
+    "logs": "tail -f /tmp/vantalos-api.log",
+    "stop": "lsof -ti tcp:3000 tcp:3001 | xargs kill -9 2>/dev/null; echo \"stopped\"",
+    "typecheck:api": "tsc -p tsconfig.api.json --noEmit"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -5,7 +5,7 @@
  */
 
 import pino from "pino";
-import { PrismaClient, TaskType, TaskStatus, ConversationState } from "@prisma/client";
+import { TaskType, TaskStatus, ConversationState } from "@prisma/client";
 import { scopeWhere } from "../../db/tenantScope.ts";
 import { createTimelineEvent } from "../timelineService.ts";
 import { buildPromptTextForKey } from "./openQuestionRules.ts";
@@ -13,7 +13,7 @@ import type { OpenQuestion, OpenQuestionKey } from "../../../shared/types/memory
 import type { AgencyPlaybook } from "../../shared/playbook.ts";
 
 const log = pino({ name: "followUpTaskCreator" });
-const prisma = new PrismaClient();
+import { prisma } from "../../db/prisma.ts";
 
 /**
  * Generate dedupe key for follow-up task

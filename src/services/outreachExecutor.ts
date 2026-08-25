@@ -5,12 +5,13 @@
 
 import pino from "pino";
 import twilio from "twilio";
-import { PrismaClient, MessageDirection, MessageChannel, MessageDeliveryStatus, ContactType, MessageSenderRole } from "@prisma/client";
+import { MessageDirection, MessageChannel, MessageDeliveryStatus, ContactType, MessageSenderRole } from "@prisma/client";
 import { env } from "../config/env.ts";
 import type { Task } from "@prisma/client";
 
 const log = pino({ name: "outreachExecutor" });
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma.ts";
+import { sendWhatsAppMessage } from "./whatsappSender.ts";
 
 // Initialize Twilio client
 const twilioClient = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
@@ -157,7 +158,7 @@ export async function sendOutreachMessage(
       messageOptions.statusCallback = statusCallbackUrl;
     }
 
-    twilioMessage = await twilioClient.messages.create(messageOptions);
+    twilioMessage = await sendWhatsAppMessage(twilioClient, messageOptions);
 
     log.info(
       {

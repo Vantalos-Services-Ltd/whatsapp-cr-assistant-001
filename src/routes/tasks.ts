@@ -16,6 +16,7 @@ import { createTimelineEvent } from "../services/timelineService.ts";
 import { applyProgressStateMachine } from "../services/progress/stateMachine.ts";
 import type { CandidateSnapshot, TaskFlags, PlacementStatus } from "../services/progress/stateMachineTypes.ts";
 import { computeEditMetrics, wasEdited, capText, generateEditSummary } from "../utils/editMetrics.ts";
+import { sendWhatsAppMessage } from "../services/whatsappSender.ts";
 
 interface TaskParams {
   taskId: string;
@@ -426,7 +427,7 @@ export async function approveTaskHandler(
             ? env.TWILIO_WHATSAPP_NUMBER
             : `whatsapp:${env.TWILIO_WHATSAPP_NUMBER}`;
 
-          const twilioMessage = await twilioClient.messages.create({
+          const twilioMessage = await sendWhatsAppMessage(twilioClient, {
             from: normalizedFrom,
             to: normalizedTo,
             body: confirmationMessage,
@@ -1019,7 +1020,7 @@ export async function rejectTaskHandler(
               ? env.TWILIO_WHATSAPP_NUMBER
               : `whatsapp:${env.TWILIO_WHATSAPP_NUMBER}`;
 
-            const twilioMessage = await twilioClient.messages.create({
+            const twilioMessage = await sendWhatsAppMessage(twilioClient, {
               from: normalizedFrom,
               to: normalizedTo,
               body: rejectionMessage,

@@ -5,12 +5,12 @@
 
 import pino from "pino";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
+
 import type { AgencyPlaybook, PlaybookUpdate, RequiredChecks, EscalationRules } from "../../shared/playbook.ts";
 import { DEFAULT_PLAYBOOK } from "../../shared/playbook.ts";
 
 const log = pino({ name: "playbookService" });
-const prisma = new PrismaClient();
+import { prisma } from "../../db/prisma.ts";
 
 /**
  * Common jailbreak phrases that should be stripped from toneStyle

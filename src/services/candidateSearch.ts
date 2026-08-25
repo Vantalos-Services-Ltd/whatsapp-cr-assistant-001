@@ -4,10 +4,9 @@
  */
 
 import pino from "pino";
-import { PrismaClient } from "@prisma/client";
 
 const log = pino({ name: "candidateSearch" });
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma.ts";
 
 const MODEL = "gpt-4o-mini";
 const OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions";

@@ -1,0 +1,7 @@
+{
+  "//": "Type-checks the backend (src/), which the main tsconfig.json excludes.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "jsx": "preserve", "allowImportingTsExtensions": true },
+  "include": ["src/**/*", "shared/**/*", "prisma/**/*.ts", "scripts/**/*.ts"],
+  "exclude": ["node_modules", "dist", ".next", "app", "components", "lib"]
+}

@@ -1,6 +1,6 @@
 import { Worker, type Job } from "bullmq";
 import pino from "pino";
-import { PrismaClient, TaskStatus, TaskType, MessageDirection, MessageSenderRole } from "@prisma/client";
+import { TaskStatus, TaskType, MessageDirection, MessageSenderRole } from "@prisma/client";
 import { scopeWhere } from "../db/tenantScope.ts";
 import { serializeError } from "../utils/errors.ts";
 
@@ -57,7 +57,7 @@ console.log(
 );
 
 const log = pino({ name: "inboundWorker" });
-const prisma = new PrismaClient();
+import { prisma } from "../db/prisma.ts";
 
 import type { InboundJobData } from "../queues/inboundQueue.ts";
 

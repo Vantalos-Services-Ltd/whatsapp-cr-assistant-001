@@ -4,13 +4,13 @@
  */
 
 import pino from "pino";
-import { PrismaClient, JobStatus, JobPipelineStage } from "@prisma/client";
+import { JobStatus, JobPipelineStage } from "@prisma/client";
 import { createHash } from "crypto";
 import { scopeWhere } from "../../db/tenantScope.ts";
 import type { Opportunity, OpportunityType, RecommendedAction } from "./types.ts";
 
 const log = pino({ name: "opportunityEngine" });
-const prisma = new PrismaClient();
+import { prisma } from "../../db/prisma.ts";
 
 /**
  * Generate stable deterministic hash for opportunity key
