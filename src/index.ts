@@ -87,7 +87,7 @@ await fastify.register(fastifySession, {
     path: "/", // Cookie available for all paths
     httpOnly: true, // Prevent XSS attacks
     sameSite: "lax", // Allow cross-site requests with credentials
-    secure: false, // Set to false for HTTP (localhost)
+    secure: process.env.NODE_ENV === "production",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     // Do NOT set domain explicitly - let browser handle it
   },
