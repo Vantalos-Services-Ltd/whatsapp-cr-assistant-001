@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useDataStatusStore } from "@/lib/dataStatusStore";
 import { getHealth } from "@/lib/api";
+import { isDemoMode } from "@/lib/mock/isDemoMode";
 
 /**
  * HeartbeatMonitor
@@ -17,7 +18,7 @@ export function HeartbeatMonitor() {
   useEffect(() => {
     const performHeartbeat = async () => {
       // Check if offline first
-      if (!navigator.onLine) {
+      if (!navigator.onLine && !isDemoMode()) {
         setOffline();
         return;
       }

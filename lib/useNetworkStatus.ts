@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { isDemoMode } from "./mock/isDemoMode";
 
 /**
  * Hook to detect network online/offline status
@@ -8,6 +9,8 @@ import { useState, useEffect } from "react";
  */
 export function useNetworkStatus(): boolean {
   const [isOnline, setIsOnline] = useState<boolean>(() => {
+    // Demo mode needs no network, so it is never "offline"
+    if (isDemoMode()) return true;
     // Initialize with navigator.onLine if available, default to true
     if (typeof window !== "undefined" && typeof navigator !== "undefined") {
       return navigator.onLine;
@@ -17,7 +20,7 @@ export function useNetworkStatus(): boolean {
 
   useEffect(() => {
     // Only run in browser
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || isDemoMode()) return;
 
     const handleOnline = () => {
       setIsOnline(true);

@@ -25,6 +25,18 @@ How it works: `lib/mock/` holds the data and a fake backend. When the app is
 started with `NEXT_PUBLIC_DEMO_MODE=true` (what `./run ui` and `pnpm dev:demo`
 do), every API call is answered from there instead of the network.
 
+### Single file for your phone (no computer needed)
+
+`standalone/vantalos-demo.html` is the whole demo in one file: pages, styles,
+data and fake backend. It needs no server and no internet.
+
+- Copy it into iCloud Drive (e.g. the Vantalos folder) or any Files location.
+- On the iPhone, open it from the Files app. The Files preview may not run
+  the page's code (it shows a blank or frozen page). If so, open the file
+  with a free viewer app that runs web pages, such as "Documents" by Readdle.
+- Your changes are saved on that device. **Reset** in the header starts over.
+- To rebuild it after code changes: `pnpm build:standalone`.
+
 ---
 
 ## 1. Start it

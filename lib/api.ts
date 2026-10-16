@@ -119,7 +119,7 @@ export async function fetchApi<T>(
   options?: FetchApiOptions
 ): Promise<T> {
   const { trackGlobalStatus = false, ...fetchOptions } = options || {};
-  const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+  const isOnline = isDemoMode() || typeof navigator === "undefined" ? true : navigator.onLine;
 
   // Before request: if online and trackGlobalStatus=true -> setRefreshing()
   if (trackGlobalStatus && isOnline && dataStatusStore) {
