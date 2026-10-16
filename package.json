@@ -11,6 +11,7 @@
     "dev": "tsx watch src/index.ts",
     "dev:api": "tsx watch src/index.ts",
     "dev:web": "next dev",
+    "dev:demo": "NEXT_PUBLIC_DEMO_MODE=true next dev",
     "dev:worker": "tsx watch src/workers/worker.ts",
     "dev:all": "concurrently -n api,web,worker -c blue,green,yellow \"pnpm dev:api\" \"pnpm dev:web\" \"pnpm dev:worker\"",
     "worker": "tsx watch src/workers/worker.ts",

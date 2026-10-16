@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getDashboardOpportunities, createOpportunityTasks, type OpportunityDTO } from "@/lib/api";
@@ -33,6 +33,12 @@ export function OpportunitiesList({ initialOpportunities = [] }: OpportunitiesLi
       setIsLoading(false);
     }
   };
+
+  // Load on first render unless the caller already supplied the list
+  useEffect(() => {
+    if (initialOpportunities.length === 0) handleRefresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCreateTasks = async (opportunity: OpportunityDTO) => {
     if (opportunity.alreadyCreated || creatingKeys.has(opportunity.opportunityKey)) {

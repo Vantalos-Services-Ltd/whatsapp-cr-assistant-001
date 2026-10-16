@@ -44,6 +44,7 @@ export type {
 // API base URL - automatically determined based on where frontend is loaded from
 // Uses getApiBaseUrl() to automatically switch between localhost and ngrok
 import { getApiBaseUrl } from "./getApiBaseUrl";
+import { isDemoMode } from "./mock/isDemoMode";
 
 /**
  * API Error class for clean error handling
@@ -71,6 +72,12 @@ export async function apiFetch(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<Response> {
+  // Demo mode: answer from the in-browser fake backend; nothing leaves the page.
+  if (isDemoMode()) {
+    const { mockFetch } = await import("./mock/handlers");
+    return mockFetch(endpoint, options);
+  }
+
   const apiBaseUrl = getApiBaseUrl();
   const url = `${apiBaseUrl}${endpoint}`;
   

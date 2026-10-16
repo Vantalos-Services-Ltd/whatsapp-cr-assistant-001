@@ -19,6 +19,7 @@ import { PipelineStageDropdown } from "./PipelineStageDropdown";
 import { PipelineNotesEditor } from "./PipelineNotesEditor";
 import { Edit2, Trash2, Download } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/getApiBaseUrl";
+import { isDemoMode } from "@/lib/mock/isDemoMode";
 
 function getProgressStageBadgeVariant(stage: string | null): "default" | "secondary" | "destructive" | "outline" {
   if (!stage) return "outline";
@@ -245,8 +246,13 @@ export function PipelineTab({ jobId }: PipelineTabProps) {
             variant="outline"
             size="sm"
             onClick={() => {
+              const exportPath = `/api/exports/jobs/${jobId}/pipeline.csv`;
+              if (isDemoMode()) {
+                import("@/lib/mock/handlers").then((m) => m.downloadMockExport(exportPath));
+                return;
+              }
               const apiBaseUrl = getApiBaseUrl();
-              const exportUrl = `${apiBaseUrl}/api/exports/jobs/${jobId}/pipeline.csv`;
+              const exportUrl = `${apiBaseUrl}${exportPath}`;
               // Create a temporary anchor element to trigger download
               const link = document.createElement("a");
               link.href = exportUrl;

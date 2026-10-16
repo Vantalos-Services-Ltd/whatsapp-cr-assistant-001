@@ -9,7 +9,8 @@ import { OperatorProviders } from "@/components/common/OperatorProviders";
 import { useDataStatusStore } from "@/lib/dataStatusStore";
 import { StatusPill } from "@/components/common/StatusPill";
 import { NetworkStatusMonitor } from "@/components/common/NetworkStatusMonitor";
-import { initDataStatusStore } from "@/lib/api";
+import { initDataStatusStore, apiFetch } from "@/lib/api";
+import { isDemoMode } from "@/lib/mock/isDemoMode";
 
 function HeaderContent({ onMenuClick }: { onMenuClick: () => void }) {
   const router = useRouter();
@@ -51,12 +52,31 @@ function HeaderContent({ onMenuClick }: { onMenuClick: () => void }) {
             lastSuccessAt={state.lastSuccessAt}
             lastErrorMessage={state.lastErrorMessage}
           />
-          <span
-            className="hidden sm:inline text-xs text-muted-foreground uppercase tracking-wide"
-            title="Running against the local database on this machine — not live candidate data"
-          >
-            Local data
-          </span>
+          {isDemoMode() ? (
+            <span className="hidden sm:inline-flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
+              <span title="Demo mode: all data is fictional and lives in this browser. No messages are sent and no services are contacted.">
+                Demo data
+              </span>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!window.confirm("Reset the demo to its starting data?")) return;
+                  await apiFetch("/demo/reset", { method: "POST" });
+                  window.location.reload();
+                }}
+                className="normal-case tracking-normal underline hover:text-foreground"
+              >
+                Reset
+              </button>
+            </span>
+          ) : (
+            <span
+              className="hidden sm:inline text-xs text-muted-foreground uppercase tracking-wide"
+              title="Running against the local database on this machine — not live candidate data"
+            >
+              Local data
+            </span>
+          )}
           <button
             onClick={handleLogout}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"

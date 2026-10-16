@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { searchCandidates, type CandidateSearchResult, previewOutreach, submitOutreach, type OutreachPreview, getCandidateDetail, type CandidateDetailDTO } from "@/lib/api";
 import { getApiBaseUrl } from "@/lib/getApiBaseUrl";
+import { isDemoMode } from "@/lib/mock/isDemoMode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -167,8 +168,13 @@ export default function SearchPage() {
                 if (searchQuery) {
                   params.set("q", searchQuery);
                 }
+                const exportPath = `/api/exports/candidates.csv?${params.toString()}`;
+                if (isDemoMode()) {
+                  import("@/lib/mock/handlers").then((m) => m.downloadMockExport(exportPath));
+                  return;
+                }
                 const apiBaseUrl = getApiBaseUrl();
-                const exportUrl = `${apiBaseUrl}/api/exports/candidates.csv?${params.toString()}`;
+                const exportUrl = `${apiBaseUrl}${exportPath}`;
                 window.open(exportUrl, "_blank");
               }}
               disabled={isLoading || results.length === 0}

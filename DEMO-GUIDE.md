@@ -4,6 +4,26 @@ Written for someone who doesn't work in the code. Everything you need is here.
 
 ---
 
+## 0. Front end only (no setup)
+
+To show the console without any database, backend, WhatsApp or AI service:
+double-click **`Vantalos UI Demo.command`**, or run `./run ui`.
+
+- Opens http://localhost:3000/operator. Any email and password logs in.
+- Every screen is filled with fictional data (the same cast as section 1).
+- Approving, rejecting, editing, creating jobs, moving pipeline stages and
+  saving settings all appear to work. Nothing is sent anywhere — all data
+  lives in your browser.
+- After you approve a reply to Marek, Danny, Kieran, Jason or Errol, the
+  candidate "replies" a few seconds later, sometimes with a new AI draft to approve.
+- The header shows **DEMO DATA** and a **Reset** link that restores the starting data.
+
+How it works: `lib/mock/` holds the data and a fake backend. When the app is
+started with `NEXT_PUBLIC_DEMO_MODE=true` (what `./run ui` and `pnpm dev:demo`
+do), every API call is answered from there instead of the network.
+
+---
+
 ## 1. Start it
 
 **Easiest way:** double-click **`Vantalos Demo.command`** in the project folder.

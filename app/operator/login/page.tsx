@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
+import { isDemoMode } from "@/lib/mock/isDemoMode";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(isDemoMode() ? "admin@example.com" : "");
+  const [password, setPassword] = useState(isDemoMode() ? "admin123" : "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,6 +87,11 @@ export default function LoginPage() {
             {isLoading ? "Logging in..." : "Login"}
           </Button>
         </form>
+        {isDemoMode() && (
+          <p className="text-xs text-muted-foreground">
+            Demo mode — any email and password will work. All data is fictional and nothing is sent.
+          </p>
+        )}
       </div>
     </div>
   );
