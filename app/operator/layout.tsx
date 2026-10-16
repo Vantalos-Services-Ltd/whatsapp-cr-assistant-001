@@ -16,6 +16,7 @@ function HeaderContent({ onMenuClick }: { onMenuClick: () => void }) {
   const router = useRouter();
   const { state, deriveStatus, setRefreshing, setUpToDate, setOutOfDate, setOffline } = useDataStatusStore();
   const effectiveStatus = deriveStatus();
+  const [confirmReset, setConfirmReset] = useState(false);
 
   // Initialize API client with status store
   useEffect(() => {
@@ -44,7 +45,7 @@ function HeaderContent({ onMenuClick }: { onMenuClick: () => void }) {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="text-sm font-medium text-muted-foreground">Operator console</span>
+          <span className="hidden sm:inline text-sm font-medium text-muted-foreground">Operator console</span>
         </div>
         <div className="flex items-center gap-4">
           <StatusPill
@@ -53,20 +54,26 @@ function HeaderContent({ onMenuClick }: { onMenuClick: () => void }) {
             lastErrorMessage={state.lastErrorMessage}
           />
           {isDemoMode() ? (
-            <span className="hidden sm:inline-flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
-              <span title="Demo mode: all data is fictional and lives in this browser. No messages are sent and no services are contacted.">
+            <span className="inline-flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
+              <span className="hidden sm:inline" title="Demo mode: all data is fictional and lives in this browser. No messages are sent and no services are contacted.">
                 Demo data
               </span>
               <button
                 type="button"
                 onClick={async () => {
-                  if (!window.confirm("Reset the demo to its starting data?")) return;
+                  // Two taps instead of window.confirm, which some embedded
+                  // viewers (e.g. published artifacts) silently refuse
+                  if (!confirmReset) {
+                    setConfirmReset(true);
+                    setTimeout(() => setConfirmReset(false), 4000);
+                    return;
+                  }
                   await apiFetch("/demo/reset", { method: "POST" });
                   window.location.reload();
                 }}
                 className="normal-case tracking-normal underline hover:text-foreground"
               >
-                Reset
+                {confirmReset ? "Tap again to reset" : "Reset"}
               </button>
             </span>
           ) : (
