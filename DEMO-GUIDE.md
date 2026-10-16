@@ -37,6 +37,16 @@ data and fake backend. It needs no server and no internet.
 - Your changes are saved on that device. **Reset** in the header starts over.
 - To rebuild it after code changes: `pnpm build:standalone`.
 
+### As an app on your iPhone Home Screen
+
+The same demo is published as a web site from the `docs/` folder through
+GitHub Pages: https://vantalos-services-ltd.github.io/whatsapp-cr-assistant-001/
+
+- Open that address in Safari → Share → **Add to Home Screen**.
+- It then opens full screen with its own icon, and works without signal
+  after the first visit.
+- `pnpm build:standalone` rebuilds `docs/` too; commit and push to update the app.
+
 ---
 
 ## 1. Start it
