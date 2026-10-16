@@ -17,6 +17,9 @@ double-click **`Vantalos UI Demo.command`**, or run `./run ui`.
 - After you approve a reply to Marek, Danny, Kieran, Jason or Errol, the
   candidate "replies" a few seconds later, sometimes with a new AI draft to approve.
 - The header shows **DEMO DATA** and a **Reset** link that restores the starting data.
+- **On your phone:** keep the phone on the same Wi-Fi as the Mac and open the
+  "On your phone" address that `./run ui` prints (like `http://192.168.1.23:3000/operator`).
+  `localhost` does not work on a phone, because there it means the phone itself.
 
 How it works: `lib/mock/` holds the data and a fake backend. When the app is
 started with `NEXT_PUBLIC_DEMO_MODE=true` (what `./run ui` and `pnpm dev:demo`

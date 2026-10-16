@@ -125,7 +125,12 @@ case "$CMD" in
       echo -e "${RED}✗${NC} Port 3000 is already in use. Run  ./run stop  first."
       exit 1
     fi
-    echo -e "${GREEN}✓${NC} Starting the console in demo mode at http://localhost:3000/operator"
+    lan_ip="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}')"
+    echo -e "${GREEN}✓${NC} Starting the console in demo mode"
+    echo "  On this computer:  http://localhost:3000/operator"
+    if [ -n "$lan_ip" ]; then
+      echo "  On your phone:     http://$lan_ip:3000/operator   (phone must be on the same Wi-Fi)"
+    fi
     echo "  Any email/password logs in. Ctrl-C to stop."
     ( sleep 8; open http://localhost:3000/operator 2>/dev/null || xdg-open http://localhost:3000/operator 2>/dev/null ) >/dev/null 2>&1 &
     NEXT_PUBLIC_DEMO_MODE=true exec "$BIN/next" dev ;;

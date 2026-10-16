@@ -7,6 +7,11 @@ const nextConfig = {
   allowedDevOrigins: [
     "webpage.ngrok-free.app",
     "*.ngrok-free.app",
+    // Phones and other devices on the same home/office network (./run ui)
+    "192.168.*.*",
+    "10.*.*.*",
+    "172.*.*.*",
+    "*.local",
   ],
   // Proxy API, auth, and webhook requests to Fastify backend (port 3001)
   async rewrites() {
